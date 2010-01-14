@@ -1,0 +1,71 @@
+RenderFlash
+===========
+
+RenderFlash is a small extension to ActionController allowing you to render 
+flash messages outside of the context of your action, letting you use complex 
+view logic in your flashes without dirtying up your actions. Since it uses 
+ActionController's render logic, it acts just like a typical render but 
+without causing DoubleRenderErrors.
+
+
+Example
+=======
+
+Let's say I want to display a link in my flash message if and only if my 
+current user is an admin.  Normally, this would look something like:
+
+  class SomethingsController < AC::Base
+    def create
+      if Something.create params
+        flash[:success] = "Something was successfully created!"
+        flash[:success] << "Click #{link_to 'here', admin_reports_path} to 
+          view a special report <span class=\"super-secret\">for your eyes 
+          only</span>" if @current_user.admin?
+        redirect_to somethings_path
+      end
+    end
+  end
+
+This trashes up your action with HTML and helper code, along with four lines
+of logic that really should be delegated to a view with render.
+
+
+Use of RenderFlash would instead look like this:
+
+  class SomethingsController < AC::Base
+    def create
+      if Something.create params
+        render_flash "success_create"
+        redirect_to somethings_path
+      end
+    end
+  end
+
+render_flash simply calls render_to_string with the view path
+  
+  "/controller/flashes/template_name"
+  
+so, in this case:
+
+  "/somethings/flashes/success_create"
+  
+It puts the results of the render_to_string into the symbolized flash key
+pulled from the first word of the template name, in this case "success".
+
+
+The contents of the template would be, roughly:
+
+  Something was successfully created!
+  if @current_user.admin?
+    Click <%= link_to 'here', admin_reports_path %> to view a special report
+    <span class="super-secret">for your eyes only</span>
+  end
+  
+This could of course be any templating language, not just erb.
+
+
+RenderFlash can also render to flash.now.
+
+  render_flash "success_create", :now => true
+
+Copyright (c) 2010 Clint Bishop, released under the MIT license
