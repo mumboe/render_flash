@@ -56,10 +56,10 @@ pulled from the first word of the template name, in this case "success".
 The contents of the template would be, roughly:
 
   Something was successfully created!
-  if @current_user.admin?
+  <% if @current_user.admin? %>
     Click <%= link_to 'here', admin_reports_path %> to view a special report
     <span class="super-secret">for your eyes only</span>
-  end
+  <% end %>
   
 This could of course be any templating language, not just erb.
 
